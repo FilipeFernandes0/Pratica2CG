@@ -1,0 +1,64 @@
+#version 330 core
+out vec4 color;
+
+in vec3 FragPos;
+in vec3 Normal;
+in vec2 TexCoord; // NOVO
+in vec3 LocalPos;
+
+uniform vec3 lightPos;
+uniform vec3 viewPos;
+uniform vec3 lightColor;
+uniform vec3 objectColor;
+
+uniform vec3 tint;       // tom multiplicado à textura (1,1,1 = sem alteração)
+uniform vec3 emissiveColor; // cor do sol (usada quando emissive = true)
+uniform float engineGlow; // 0 a 1: brilho laranja nas saídas dos motores (só o avião)
+uniform bool emissive;  // true para o sol: desenha a cor plena, sem sombreamento
+uniform bool hasTexture; // NOVO: Interruptor
+uniform sampler2D texture_diffuse1; // NOVO: A imagem
+
+void main()
+{
+    // Escolher entre a textura (.png) ou a cor sólida (.mtl)
+    vec3 baseColor;
+    if(hasTexture) {
+        baseColor = vec3(texture(texture_diffuse1, TexCoord)) * tint;
+    } else {
+        baseColor = objectColor;
+    }
+
+    // O sol é a fonte de luz: não é sombreado por si próprio
+    if(emissive) {
+        color = vec4(emissiveColor, 1.0);
+        return;
+    }
+
+    // 1. LUZ AMBIENTE
+    float ambientStrength = 0.3;
+    vec3 ambient = ambientStrength * lightColor;
+
+    // 2. LUZ DIFUSA
+    vec3 norm = normalize(Normal);
+    vec3 lightDir = normalize(lightPos - FragPos);
+    float diff = max(dot(norm, lightDir), 0.0);
+    vec3 diffuse = diff * lightColor;
+
+    // 3. LUZ ESPECULAR
+    float specularStrength = 0.5;
+    vec3 viewDir = normalize(viewPos - FragPos);
+    vec3 reflectDir = reflect(-lightDir, norm);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+    vec3 specular = specularStrength * spec * lightColor;
+
+    // Multiplicar a luz pela cor base
+    vec3 result = (ambient + diffuse + specular) * baseColor;
+
+    // Brilho dos motores: perto das duas saídas (parte de trás do avião) mistura-se laranja
+    if(engineGlow > 0.0) {
+        float d = min(distance(LocalPos, vec3(1.85, -0.3, -7.5)), distance(LocalPos, vec3(-1.85, -0.3, -7.5)));
+        float g = engineGlow * (1.0 - smoothstep(0.4, 1.3, d));
+        result = mix(result, vec3(1.0, 0.45, 0.1), g);
+    }
+    color = vec4(result, 1.0);
+}

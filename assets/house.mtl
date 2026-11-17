@@ -1,0 +1,21 @@
+# house.mtl - criado à mão (o modelo veio sem .mtl). Troca a imagem em map_Kd se quiseres outra.
+
+# Corpo da casa (as paredes)
+newmtl Material
+Kd 1.0 1.0 1.0
+map_Kd Medieval_Brick_Texture_by_goodtextures.jpg
+
+# Telhado e pequenos elementos
+newmtl Material.001
+Kd 1.0 1.0 1.0
+map_Kd WoodPlanksBare0051_3_M.jpg
+
+# Janelas (5 planos pequenos nas paredes)
+newmtl Material.002
+Kd 1.0 1.0 1.0
+map_Kd windows_0279_01_preview.jpg
+
+# Chão por baixo da casa (plano de 9 x 7)
+newmtl Material.003
+Kd 1.0 1.0 1.0
+map_Kd Medieval_Brick_Texture_by_goodtextures.jpg
